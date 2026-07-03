@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>设备信息 - 实验室设备管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .status-NORMAL {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-BORROWED {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-MAINTENANCE {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-SCRAPPED {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .equipment-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .equipment-no {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: #95a5a6;
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: 600;
+            text-align: right;
+            max-width: 60%;
+        }
+
+        .condition-good {
+            color: #27ae60;
+        }
+
+        .condition-damaged {
+            color: #f39c12;
+        }
+
+        .condition-serious {
+            color: #e74c3c;
+        }
+
+        .image-section {
+            margin-top: 20px;
+        }
+
+        .image-section h3 {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 12px;
+        }
+
+        .equipment-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .qr-code-image {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            display: block;
+            margin: 20px auto;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* 操作按钮样式 */
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-checkout {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-checkout:hover {
+            background: #2980b9;
+        }
+
+        .btn-checkin {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-checkin:hover {
+            background: #229954;
+        }
+
+        .btn-disabled {
+            background: #bdc3c7;
+            color: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        .btn-disabled:hover {
+            background: #bdc3c7;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            background: #ecf0f1;
+            color: #7f8c8d;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-confirm {
+            flex: 1;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-confirm:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .error-message {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .btn-back {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: #f8f9fa;
+        }
+
+        .timestamp {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        /* Toast提示样式 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 2000;
+            animation: slideDown 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .toast-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .toast-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .equipment-name {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 加载状态 -->
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <div>正在加载设备信息...</div>
+        </div>
+
+        <!-- 错误状态 -->
+        <div id="error" class="error" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <div class="error-message" id="error-message">设备不存在或加载失败</div>
+            <a href="javascript:history.back()" class="btn-back">返回</a>
+        </div>
+
+        <!-- 设备信息展示 -->
+        <div id="content" style="display: none;">
+            <div class="container">
+                <div class="header">
+                    <h1>🔬 设备信息</h1>
+                    <p>实验室设备管理系统</p>
+                </div>
+
+                <div class="card">
+                    <span class="status-badge" id="status-badge">在库</span>
+                    <div class="equipment-name" id="equipment-name">设备名称</div>
+                    <div class="equipment-no" id="equipment-no">设备编号</div>
+
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">唯一标识码</span>
+                            <span class="info-value" id="unique-code">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">设备分类</span>
+                            <span class="info-value" id="category-name">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">所属实验室</span>
+                            <span class="info-value" id="laboratory-name">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">品牌</span>
+                            <span class="info-value" id="brand">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">型号</span>
+                            <span class="info-value" id="model">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">序列号</span>
+                            <span class="info-value" id="serial-number">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">完好程度</span>
+                            <span class="info-value" id="condition-text">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">购买日期</span>
+                            <span class="info-value" id="purchase-date">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">保修到期</span>
+                            <span class="info-value" id="warranty-date">-</span>
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="action-buttons" id="action-buttons">
+                        <!-- 按钮会动态生成 -->
+                    </div>
+
+                    <!-- 设备图片 -->
+                    <div class="image-section" id="image-section" style="display: none;">
+                        <h3>📷 设备图片</h3>
+                        <img id="equipment-image" class="equipment-image" src="" alt="设备图片">
+                    </div>
+
+                    <!-- 二维码图片 -->
+                    <div class="image-section" id="qrcode-section" style="display: none;">
+                        <h3>🔗 设备二维码</h3>
+                        <img id="qrcode-image" class="qr-code-image" src="" alt="二维码">
+                    </div>
+                </div>
+
+                <div class="timestamp" id="timestamp"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作确认模态框 -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modal-title">确认操作</div>
+            <div class="form-group">
+                <label class="form-label" for="operator-name">操作人姓名</label>
+                <input type="text" id="operator-name" class="form-input" placeholder="请输入您的姓名">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal()">取消</button>
+                <button class="btn-confirm" id="btn-confirm" onclick="confirmAction()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentEquipment = null;
+        let currentAction = null; // 'checkout' 或 'checkin'
+
+        // 获取URL参数中的设备ID
+        function getEquipmentId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // 格式化日期
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN');
+        }
+
+        // 获取状态样式类
+        function getStatusClass(status) {
+            return 'status-' + status;
+        }
+
+        // 显示Toast提示
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-' + type;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // 加载设备信息
+        async function loadEquipmentInfo() {
+            const equipmentId = getEquipmentId();
+            
+            if (!equipmentId) {
+                showError('未提供设备ID');
+                return;
+            }
+
+            try {
+                // 调用API获取设备信息
+                const response = await fetch(`/api/h5/equipment/${equipmentId}`);
+                const result = await response.json();
+
+                if (result.code !== 200) {
+                    showError(result.message || '加载设备信息失败');
+                    return;
+                }
+
+                currentEquipment = result.data;
+                displayEquipmentInfo(currentEquipment);
+            } catch (error) {
+                console.error('加载设备信息失败:', error);
+                showError('网络错误，请稍后重试');
+            }
+        }
+
+        // 显示设备信息
+        function displayEquipmentInfo(equipment) {
+            // 隐藏加载状态
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+
+            // 状态标签
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.textContent = equipment.statusText || '未知';
+            statusBadge.className = 'status-badge ' + getStatusClass(equipment.status);
+
+            // 基本信息
+            document.getElementById('equipment-name').textContent = equipment.equipmentName || '未命名设备';
+            document.getElementById('equipment-no').textContent = equipment.equipmentNo || '-';
+            document.getElementById('unique-code').textContent = equipment.uniqueCode || '-';
+            document.getElementById('category-name').textContent = equipment.categoryName || '-';
+            document.getElementById('laboratory-name').textContent = equipment.laboratoryName || '-';
+            document.getElementById('brand').textContent = equipment.brand || '-';
+            document.getElementById('model').textContent = equipment.model || '-';
+            document.getElementById('serial-number').textContent = equipment.serialNumber || '-';
+            
+            // 完好程度
+            const conditionText = document.getElementById('condition-text');
+            conditionText.textContent = equipment.conditionText || '-';
+            if (equipment.equipmentCondition === 'GOOD') {
+                conditionText.className = 'info-value condition-good';
+            } else if (equipment.equipmentCondition === 'DAMAGED') {
+                conditionText.className = 'info-value condition-damaged';
+            } else if (equipment.equipmentCondition === 'SERIOUS') {
+                conditionText.className = 'info-value condition-serious';
+            }
+
+            // 日期信息
+            document.getElementById('purchase-date').textContent = formatDate(equipment.purchaseDate);
+            document.getElementById('warranty-date').textContent = formatDate(equipment.warrantyDate);
+
+            // 设备图片
+            if (equipment.imageUrl) {
+                const imageSection = document.getElementById('image-section');
+                imageSection.style.display = 'block';
+                document.getElementById('equipment-image').src = equipment.imageUrl;
+            }
+
+            // 二维码图片
+            if (equipment.qrCodeImage) {
+                const qrcodeSection = document.getElementById('qrcode-section');
+                qrcodeSection.style.display = 'block';
+                // 构建完整的二维码图片URL
+                let qrCodeUrl = equipment.qrCodeImage;
+                if (!qrCodeUrl.startsWith('http')) {
+                    qrCodeUrl = window.location.origin + '/api' + qrCodeUrl;
+                }
+                document.getElementById('qrcode-image').src = qrCodeUrl;
+            }
+
+            // 根据状态显示操作按钮
+            displayActionButtons(equipment);
+
+            // 更新时间戳
+            document.getElementById('timestamp').textContent = 
+                '数据加载时间: ' + new Date().toLocaleString('zh-CN');
+        }
+
+        // 根据设备状态显示操作按钮
+        function displayActionButtons(equipment) {
+            const actionButtons = document.getElementById('action-buttons');
+            actionButtons.innerHTML = '';
+
+            if (equipment.status === 'NORMAL') {
+                // 设备在库，显示借出按钮
+                const checkoutBtn = document.createElement('button');
+                checkoutBtn.className = 'btn btn-checkout';
+                checkoutBtn.textContent = '📤 设备借出';
+                checkoutBtn.onclick = () => openModal('checkout');
+                actionButtons.appendChild(checkoutBtn);
+            } else if (equipment.status === 'BORROWED') {
+                // 设备已借出，显示归还按钮
+                const checkinBtn = document.createElement('button');
+                checkinBtn.className = 'btn btn-checkin';
+                checkinBtn.textContent = '📥 设备归还';
+                checkinBtn.onclick = () => openModal('checkin');
+                actionButtons.appendChild(checkinBtn);
+            } else {
+                // 其他状态，显示不可用提示
+                const disabledBtn = document.createElement('button');
+                disabledBtn.className = 'btn btn-disabled';
+                disabledBtn.textContent = equipment.status === 'MAINTENANCE' ? '维修中，不可操作' :
+                                            equipment.status === 'SCRAPPED' ? '已报废，不可操作' : '当前状态不可操作';
+                disabledBtn.disabled = true;
+                actionButtons.appendChild(disabledBtn);
+            }
+        }
+
+        // 打开确认模态框
+        function openModal(action) {
+            currentAction = action;
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const confirmBtn = document.getElementById('btn-confirm');
+            
+            if (action === 'checkout') {
+                modalTitle.textContent = '确认借出设备';
+                confirmBtn.textContent = '确认借出';
+            } else if (action === 'checkin') {
+                modalTitle.textContent = '确认归还设备';
+                confirmBtn.textContent = '确认归还';
+            }
+
+            // 清空输入框
+            document.getElementById('operator-name').value = '';
+
+            // 显示模态框
+            modal.classList.add('active');
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('active');
+            currentAction = null;
+        }
+
+        // 确认操作
+        async function confirmAction() {
+            const operatorName = document.getElementById('operator-name').value.trim();
+            
+            if (!operatorName) {
+                showToast('请输入操作人姓名', 'error');
+                return;
+            }
+
+            const equipmentId = getEquipmentId();
+            let url, method;
+
+            if (currentAction === 'checkout') {
+                url = `/api/h5/equipment/${equipmentId}/checkout`;
+                method = 'POST';
+            } else if (currentAction === 'checkin') {
+                url = `/api/h5/equipment/${equipmentId}/checkin`;
+                method = 'POST';
+            } else {
+                return;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `operator=${encodeURIComponent(operatorName)}`
+                });
+
+                const result = await response.json();
+
+                if (result.code === 200) {
+                    showToast(result.message || '操作成功', 'success');
+                    closeModal();
+                    
+                    // 1秒后重新加载设备信息
+                    setTimeout(() => {
+                        loadEquipmentInfo();
+                    }, 1000);
+                } else {
+                    showToast(result.message || '操作失败', 'error');
+                }
+            } catch (error) {
+                console.error('操作失败:', error);
+                showToast('网络错误，请稍后重试', 'error');
+            }
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error-message').textContent = message;
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEquipmentInfo();
+        });
+    </script>
+</body>
+</html>

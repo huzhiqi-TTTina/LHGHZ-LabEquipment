@@ -1,0 +1,93 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+// 通用样式
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 4px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+}
+
+.search-form {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+// 状态标签
+.status-tag {
+  &.normal {
+    color: #67c23a;
+    background: #f0f9ff;
+  }
+
+  &.warning {
+    color: #e6a23c;
+    background: #fdf6ec;
+  }
+
+  &.danger {
+    color: #f56c6c;
+    background: #fef0f0;
+  }
+
+  &.info {
+    color: #909399;
+    background: #f4f4f5;
+  }
+}
+
+// Element Plus 样式覆盖
+.el-table {
+  .el-table__header th {
+    background-color: #fafafa;
+  }
+}
+
+.el-pagination {
+  .el-pager li.is-active {
+    background-color: #1890ff;
+  }
+}
