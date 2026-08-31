@@ -35,4 +35,10 @@ build/
 .vscode/
 
 ### Mac OS ###
+
 .DS_Store
+frontend/node_modules/
+.idea/
+logs/
+.workbuddy/
+.codebuddy/
