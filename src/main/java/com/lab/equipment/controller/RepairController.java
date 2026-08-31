@@ -39,13 +39,15 @@ public class RepairController {
     }
 
     /**
-     * 根据ID获取报修详情
+     * 获取可分配的老师列表（管理员/老师）
      */
-    @GetMapping("/{id}")
-    public Result<RepairRequest> getById(@PathVariable Long id) {
-        RepairRequest repair = repairService.getRepairById(id);
-        return Result.success(repair);
+    @GetMapping("/teachers")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public Result<List<SysUser>> getTeachers() {
+        List<SysUser> teachers = repairService.getAllTeachers();
+        return Result.success(teachers);
     }
+
 
     /**
      * 提交报修
@@ -94,10 +96,10 @@ public class RepairController {
      */
     @PostMapping("/{id}/complete")
     public Result<Void> complete(@PathVariable Long id,
-                                  @RequestParam String repairDescription,
-                                  @RequestParam(required = false) String partsUsed,
-                                  @RequestParam(required = false) Double repairCost,
-                                  @AuthenticationPrincipal CustomeUserDetails userDetails) {
+                                 @RequestParam String repairDescription,
+                                 @RequestParam(required = false) String partsUsed,
+                                 @RequestParam(required = false) Double repairCost,
+                                 @AuthenticationPrincipal CustomeUserDetails userDetails) {
         repairService.completeRepair(id, userDetails.getUserId(), repairDescription, partsUsed, repairCost);
         return Result.success("报修已完成", null);
     }
@@ -108,7 +110,7 @@ public class RepairController {
     @PostMapping("/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> reject(@PathVariable Long id,
-                                 @RequestParam(required = false) String remark) {
+                               @RequestParam(required = false) String remark) {
         repairService.rejectRepair(id, remark);
         return Result.success("报修已驳回", null);
     }
@@ -122,16 +124,15 @@ public class RepairController {
         Long count = repairService.getPendingRepairCount();
         return Result.success(count);
     }
-
     /**
-     * 获取可分配的老师列表（管理员/老师）
+     * 根据ID获取报修详情
      */
-    @GetMapping("/teachers")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public Result<List<SysUser>> getTeachers() {
-        List<SysUser> teachers = repairService.getAllTeachers();
-        return Result.success(teachers);
+    @GetMapping("/{id}")
+    public Result<RepairRequest> getById(@PathVariable Long id) {
+        RepairRequest repair = repairService.getRepairById(id);
+        return Result.success(repair);
     }
+
 
     /**
      * 获取报修任务分配统计（管理员）

@@ -4,7 +4,7 @@
     <el-card class="search-form">
       <el-form :inline="true" :model="queryForm">
         <el-form-item label="关键字">
-          <el-input v-model="queryForm.keyword" placeholder="设备名称/编号/品牌/型号" clearable />
+          <el-input v-model="queryForm.keyword" placeholder="设备名称/编号/品牌/型号/id" clearable />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -47,6 +47,7 @@
             <el-tag type="info" size="small">{{ row.uniqueCode || '-' }}</el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="id" label="设备id" width="120" />
         <el-table-column prop="equipmentNo" label="设备编号" width="150" />
         <el-table-column prop="equipmentName" label="设备名称" min-width="150" />
         <el-table-column prop="categoryName" label="分类" width="120" />

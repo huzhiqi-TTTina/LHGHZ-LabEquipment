@@ -122,17 +122,18 @@ npm run dev
 - `POST /api/auth/change-password` - 修改密码
 
 ### 设备接口
-- `GET /api/equipment/list` - 获取设备列表
+- `GET /api/equipment/list` - 获取设备列表（分页）
 - `GET /api/equipment/{id}` - 获取设备详情
 - `POST /api/equipment` - 新增设备
 - `PUT /api/equipment/{id}` - 更新设备
 - `DELETE /api/equipment/{id}` - 删除设备
 - `POST /api/equipment/{id}/borrow` - 设备借出
 - `POST /api/equipment/{id}/return` - 设备归还
-- `GET /api/equipment/export` - 导出设备列表
+- `POST /api/equipment/qrcode/regenerate-all` - 批量生成设备二维码
+- `POST /api/equipment/{id}/qrcode/regenerate` - 生成单个设备二维码
 
 ### 预约接口
-- `GET /api/reservation/list` - 获取预约列表
+- `GET /api/reservation/list` - 获取预约列表（分页）
 - `GET /api/reservation/my` - 获取我的预约
 - `GET /api/reservation/{id}` - 获取预约详情
 - `POST /api/reservation` - 创建预约
@@ -140,23 +141,49 @@ npm run dev
 - `POST /api/reservation/{id}/cancel` - 取消预约
 
 ### 报修接口
-- `GET /api/repair/list` - 获取报修列表
+- `GET /api/repair/list` - 获取报修列表（分页）
 - `GET /api/repair/{id}` - 获取报修详情
 - `POST /api/repair` - 提交报修
 - `POST /api/repair/{id}/handle` - 处理报修
 - `POST /api/repair/{id}/complete` - 完成报修
 - `POST /api/repair/{id}/reject` - 驳回报修
+- `GET /api/repair/pending-count` - 获取待处理报修数量
+- `POST /api/repair/{id}/assign` - 分配报修任务
+- `GET /api/repair/my-tasks` - 获取我的报修任务
 
 ### 维护接口
-- `GET /api/maintenance/plans` - 获取维护计划
+- `GET /api/maintenance/plans` - 获取维护计划列表
 - `POST /api/maintenance/plans` - 创建维护计划
+- `PUT /api/maintenance/plans/{id}` - 更新维护计划
+- `DELETE /api/maintenance/plans/{id}` - 删除维护计划
 - `GET /api/maintenance/records` - 获取维护记录
 - `POST /api/maintenance/records` - 添加维护记录
+- `POST /api/maintenance/plans/{id}/complete` - 完成维护
+- `GET /api/maintenance/reminders` - 获取维护提醒列表
+- `POST /api/maintenance/plans/{id}/assign` - 分配维护任务
+- `GET /api/maintenance/my-plans` - 获取我的维护计划
+- `GET /api/maintenance/teachers` - 获取维护负责老师列表
 
 ### 统计接口
 - `GET /api/statistics` - 获取统计数据
-- `GET /api/statistics/utilization-trend` - 获取利用率趋势
-- `GET /api/statistics/by-category` - 按分类统计
+- `GET /api/statistics/export` - 导出统计数据
+
+### 文件接口
+- `POST /api/file/upload` - 上传单个文件
+- `POST /api/file/uploads` - 上传多个文件
+
+### 用户管理接口
+- `GET /api/admin/user/list` - 获取用户列表（分页）
+- `GET /api/admin/user/{id}` - 获取用户详情
+- `POST /api/admin/user/create` - 新增用户
+- `PUT /api/admin/user/update` - 更新用户信息
+- `DELETE /api/admin/user/{id}` - 删除用户
+- `DELETE /api/admin/user/batch` - 批量删除用户
+- `POST /api/admin/user/reset-password` - 重置用户密码
+- `PUT /api/admin/user/status` - 批量修改用户状态
+- `GET /api/admin/user/roles` - 获取所有角色
+- `GET /api/admin/user/students` - 获取所有学生列表
+- `GET /api/repair/teachers` - 获取所有老师列表
 
 ## 权限说明
 

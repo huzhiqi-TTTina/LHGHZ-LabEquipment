@@ -1,0 +1,24 @@
+graph TD
+    HTML["index.html (唯一入口)"]
+    MAIN["main.js (启动: 注册插件)"]
+    APP["App.vue (根组件: router-view)"]
+    ROUTER["Router (URL→组件映射)"]
+    LAYOUT["Layout (侧边栏+顶栏+内容区)"]
+    VIEWS["Views (各功能页面)"]
+    API["API层 (request.js + index.js)"]
+    STORE["Pinia Store (全局状态)"]
+    EP["Element Plus (UI组件)"]
+    VITE["Vite (代理转发)"]
+    BACKEND["Spring Boot 后端"]
+
+    HTML --> MAIN
+    MAIN --> APP
+    APP --> ROUTER
+    ROUTER --> LAYOUT
+    LAYOUT --> VIEWS
+    VIEWS --> API
+    VIEWS --> STORE
+    VIEWS --> EP
+    API --> STORE
+    API --> VITE
+    VITE --> BACKEND
