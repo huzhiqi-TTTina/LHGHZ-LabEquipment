@@ -17,7 +17,7 @@
         <el-menu-item
           v-for="route in menuRoutes"
           :key="route.path"
-          :index="route.path"
+          :index="'/' + route.path"
         >
           <el-icon><component :is="route.meta?.icon" /></el-icon>
           <template #title>{{ route.meta?.title }}</template>
@@ -91,6 +91,7 @@ import { ElMessageBox, ElMessage } from 'element-plus'
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const activeMenu = computed(() => route.path)
 
 const isCollapse = ref(false)
 const showNotification = ref(false)
