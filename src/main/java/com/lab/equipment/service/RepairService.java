@@ -226,8 +226,8 @@ public class RepairService extends ServiceImpl<RepairRequestMapper, RepairReques
      * 生成报修编号
      */
     private String generateRepairNo() {
-        return "REP" + System.currentTimeMillis();
-    }
+        return "REP"+System.currentTimeMillis();
+}
 
     /**
      * 获取所有老师用户（用于任务分配）

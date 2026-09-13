@@ -1,6 +1,7 @@
 package com.lab.equipment.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -32,7 +33,11 @@ public class EquipmentReservation implements Serializable {
      * 设备ID
      */
     private Long equipmentId;
-
+    /**
+     * 预约人姓名
+     */
+    @TableField(exist = false)
+    private String userName;
     /**
      * 预约人ID
      */

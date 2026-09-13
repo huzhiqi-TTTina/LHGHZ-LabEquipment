@@ -16,6 +16,14 @@ import java.util.List;
 public interface EquipmentReservationMapper extends BaseMapper<EquipmentReservation> {
 
     /**
+     * 查询预约列表（带申请者名字）
+     */
+    @Select("SELECT a.*, u.real_name AS userName " +
+            "FROM equipment_reservation a " +
+            "LEFT JOIN sys_user u ON a.user_id = u.id " +
+            "ORDER BY a.create_time DESC")
+    List<EquipmentReservation> selectReservationList();
+    /**
      * 查询设备预约冲突的记录
      */
     @Select("SELECT * FROM equipment_reservation WHERE equipment_id = #{equipmentId} " +
