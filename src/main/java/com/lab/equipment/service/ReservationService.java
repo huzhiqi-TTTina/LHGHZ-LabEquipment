@@ -43,25 +43,7 @@ public class ReservationService extends ServiceImpl<EquipmentReservationMapper, 
     /**
      * 分页查询预约列表
      */
-    /**public PageResult<EquipmentReservation> getReservationList(PageQueryDTO query) {
-        LambdaQueryWrapper<EquipmentReservation> wrapper = new LambdaQueryWrapper<>();
-
-        if (StringUtils.hasText(query.getKeyword())) {
-            wrapper.and(w -> w.eq(EquipmentReservation::getReservationNo, query.getKeyword()));
-        }
-
-        wrapper.orderByDesc(EquipmentReservation::getCreateTime);
-
-        Page<EquipmentReservation> page = reservationMapper.selectPage(
-                new Page<>(query.getCurrent(), query.getSize()),
-                wrapper
-        );
-
-        return PageResult.of(page.getTotal(), page.getRecords(), page.getCurrent(), page.getSize());
-    }
-   */
     public PageResult<EquipmentReservation> getReservationList(PageQueryDTO query) {
-        // 1. 构建查询条件
         LambdaQueryWrapper<EquipmentReservation> wrapper = new LambdaQueryWrapper<>();
 
         if (StringUtils.hasText(query.getKeyword())) {
@@ -69,27 +51,19 @@ public class ReservationService extends ServiceImpl<EquipmentReservationMapper, 
         }
 
         wrapper.orderByDesc(EquipmentReservation::getCreateTime);
-
-        // 2. 分页查询预约记录（此时 userName 是空的）
         Page<EquipmentReservation> page = reservationMapper.selectPage(
                 new Page<>(query.getCurrent(), query.getSize()),
                 wrapper
         );
-
-        // 3. 遍历当前页的数据，查名字并塞进去
         List<EquipmentReservation> records = page.getRecords();
         for (EquipmentReservation record : records) {
             if (record.getUserId() != null) {
-                // 这里调用你项目里的 SysUserMapper 去查用户
-                // 假设 SysUser 实体类里，存名字的字段是 realName
                 SysUser user = sysUserMapper.selectById(record.getUserId());
                 if (user != null) {
                     record.setUserName(user.getRealName());
                 }
             }
         }
-
-        // 4. 返回结果
         return PageResult.of(page.getTotal(), records, page.getCurrent(), page.getSize());
     }
     /**
