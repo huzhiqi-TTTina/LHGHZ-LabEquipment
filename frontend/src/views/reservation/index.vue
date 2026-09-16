@@ -19,6 +19,7 @@
       <el-table :data="tableData" v-loading="loading" border stripe>
         <el-table-column type="index" label="序号" width="60" />
         <el-table-column prop="reservationNo" label="预约编号" width="150" />
+        <el-table-column prop="equipmentName" label="设备名称" width="100" />
         <el-table-column prop="equipmentId" label="设备ID" width="70" />
         <el-table-column prop="userName" label="申请者名字" width="130"></el-table-column>
         <el-table-column prop="startTime" label="开始时间" width="180" />

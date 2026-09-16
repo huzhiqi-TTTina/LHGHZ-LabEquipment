@@ -24,27 +24,7 @@
             {{ getEquipmentName(row.equipmentId) }}
           </template>
         </el-table-column>
-        <el-table-column label="故障图片" width="100">
-          <template #default="{ row }">
-            <el-image
-              v-if="row.faultImageUrls"
-              :src="getFirstImageUrl(row.faultImageUrls)"
-              fit="cover"
-              style="width: 50px; height: 50px; border-radius: 4px; cursor: pointer;"
-              :preview-src-list="getImageList(row.faultImageUrls)"
-              preview-teleported
-            >
-              <template #error>
-                <div style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">
-                  <el-icon><icon-picture /></el-icon>
-                </div>
-              </template>
-            </el-image>
-            <div v-else style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px; color: #999;">
-              <el-icon><icon-picture /></el-icon>
-            </div>
-          </template>
-        </el-table-column>
+
         <el-table-column prop="faultDescription" label="故障描述" min-width="200" />
         <el-table-column prop="reportTime" label="报修时间" width="180" />
         <el-table-column label="处理人" width="120">
