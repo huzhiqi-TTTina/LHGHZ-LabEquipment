@@ -99,10 +99,8 @@
           v-model:current-page="queryForm.page"
           v-model:page-size="queryForm.size"
           :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSearch"
-          @current-change="handleSearch"
+          layout="total, prev, pager, next, jumper"
+          @current-change="getUserList"
         />
       </div>
     </el-card>

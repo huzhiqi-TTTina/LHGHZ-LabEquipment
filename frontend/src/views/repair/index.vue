@@ -3,7 +3,7 @@
     <el-card class="search-form">
       <el-form :inline="true" :model="queryForm">
         <el-form-item label="关键字">
-          <el-input v-model="queryForm.keyword" placeholder="报修编号" clearable />
+          <el-input v-model="queryForm.keyword" placeholder="设备名称/id" clearable />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -77,10 +77,8 @@
           v-model:current-page="queryForm.current"
           v-model:page-size="queryForm.size"
           :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSearch"
-          @current-change="handleSearch"
+          layout="total, prev, pager, next, jumper"
+          @current-change="getRepairList"
         />
       </div>
     </el-card>

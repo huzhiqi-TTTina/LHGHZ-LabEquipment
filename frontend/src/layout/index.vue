@@ -38,11 +38,6 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
-          <el-badge :value="pendingCount" :hidden="pendingCount === 0" class="notification-badge">
-            <el-icon class="header-icon" @click="showNotification = true">
-              <Bell />
-            </el-icon>
-          </el-badge>
           <el-dropdown @command="handleCommand">
             <div class="user-info">
               <el-avatar :size="32" :src="userStore.avatar">
@@ -94,8 +89,6 @@ const userStore = useUserStore()
 const activeMenu = computed(() => route.path)
 
 const isCollapse = ref(false)
-const showNotification = ref(false)
-const pendingCount = ref(0)
 
 // 菜单路由
 const menuRoutes = computed(() => {
@@ -202,18 +195,6 @@ const handleCommand = async (command) => {
     display: flex;
     align-items: center;
     gap: 20px;
-
-    .notification-badge {
-      .header-icon {
-        font-size: 20px;
-        cursor: pointer;
-        transition: color 0.3s;
-
-        &:hover {
-          color: #1890ff;
-        }
-      }
-    }
 
     .user-info {
       display: flex;

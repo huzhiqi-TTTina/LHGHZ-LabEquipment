@@ -32,9 +32,7 @@
           v-model:current-page="queryForm.current"
           v-model:page-size="queryForm.size"
           :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="getMyList"
+          layout="total, prev, pager, next, jumper"
           @current-change="getMyList"
         />
       </div>
