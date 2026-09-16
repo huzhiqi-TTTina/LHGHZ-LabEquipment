@@ -88,6 +88,13 @@ public class ReservationService extends ServiceImpl<EquipmentReservationMapper, 
                     record.setUserName(user.getRealName());
                 }
             }
+            if(record.getEquipmentId()!=null){
+
+                Equipment equipment=equipmentMapper.selectById(record.getEquipmentId());
+                if(equipment!=null){
+                    record.setEquipmentName(equipment.getEquipmentName());
+                }
+            }
         }
         return PageResult.of(page.getTotal(), records, page.getCurrent(), page.getSize());
     }

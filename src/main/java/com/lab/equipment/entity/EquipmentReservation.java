@@ -30,6 +30,11 @@ public class EquipmentReservation implements Serializable {
     private String reservationNo;
 
     /**
+     * 设备名称
+     */
+    @TableField(exist = false)
+    private String equipmentName;
+    /**
      * 设备ID
      */
     private Long equipmentId;
