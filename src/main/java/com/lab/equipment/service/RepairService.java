@@ -23,6 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 /**
  * 故障报修服务
@@ -41,10 +43,34 @@ public class RepairService extends ServiceImpl<RepairRequestMapper, RepairReques
     public PageResult<RepairRequest> getRepairList(PageQueryDTO query) {
         LambdaQueryWrapper<RepairRequest> wrapper = new LambdaQueryWrapper<>();
 
+        // 同时支持按设备ID和按设备名称搜索
+        List<Long> matchedEquipmentIds = new ArrayList<>();
+
         if (StringUtils.hasText(query.getKeyword())) {
-            wrapper.and(w -> w.eq(RepairRequest::getRepairNo, query.getKeyword()));
+            // 如果 keyword 是纯数字，按设备ID搜索
+            if (query.getKeyword().matches("\\d+")) {
+                matchedEquipmentIds.add(Long.parseLong(query.getKeyword()));
+            } else {
+                // 如果 keyword 是中文/字母，按设备名称模糊搜索
+                List<Equipment> matchedEquipments = equipmentMapper.selectList(
+                        new LambdaQueryWrapper<Equipment>()
+                                .like(Equipment::getEquipmentName, query.getKeyword())
+                );
+                matchedEquipmentIds = matchedEquipments.stream()
+                        .map(Equipment::getId)
+                        .collect(Collectors.toList());
+            }
+
+            // 如果没匹配到设备，直接返回空
+            if (matchedEquipmentIds.isEmpty()) {
+                return PageResult.of(0L, new ArrayList<>(), query.getCurrent(), query.getSize());
+            }
         }
 
+// 用匹配到的设备ID过滤报修记录
+        if (!matchedEquipmentIds.isEmpty()) {
+            wrapper.in(RepairRequest::getEquipmentId, matchedEquipmentIds);
+        }
         wrapper.orderByDesc(RepairRequest::getReportTime);
 
         Page<RepairRequest> page = repairRequestMapper.selectPage(

@@ -27,7 +27,7 @@ import java.util.List;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ThreadLocalRandom;
-
+import java.util.stream.Collectors;
 /**
  * 设备预约服务
  */
@@ -46,8 +46,33 @@ public class ReservationService extends ServiceImpl<EquipmentReservationMapper, 
     public PageResult<EquipmentReservation> getReservationList(PageQueryDTO query) {
         LambdaQueryWrapper<EquipmentReservation> wrapper = new LambdaQueryWrapper<>();
 
+        // 同时支持按设备ID和按设备名称搜索
+        List<Long> matchedEquipmentIds = new ArrayList<>();
+
         if (StringUtils.hasText(query.getKeyword())) {
-            wrapper.and(w -> w.eq(EquipmentReservation::getReservationNo, query.getKeyword()));
+            // 如果 keyword 是纯数字，按设备ID搜索
+            if (query.getKeyword().matches("\\d+")) {
+                matchedEquipmentIds.add(Long.parseLong(query.getKeyword()));
+            } else {
+                // 如果 keyword 是中文/字母，按设备名称模糊搜索
+                List<Equipment> matchedEquipments = equipmentMapper.selectList(
+                        new LambdaQueryWrapper<Equipment>()
+                                .like(Equipment::getEquipmentName, query.getKeyword())
+                );
+                matchedEquipmentIds = matchedEquipments.stream()
+                        .map(Equipment::getId)
+                        .collect(Collectors.toList());
+            }
+
+            // 如果没匹配到设备，直接返回空
+            if (matchedEquipmentIds.isEmpty()) {
+                return PageResult.of(0L, new ArrayList<>(), query.getCurrent(), query.getSize());
+            }
+        }
+
+// 用匹配到的设备ID过滤预约记录
+        if (!matchedEquipmentIds.isEmpty()) {
+            wrapper.in(EquipmentReservation::getEquipmentId, matchedEquipmentIds);
         }
 
         wrapper.orderByDesc(EquipmentReservation::getCreateTime);
