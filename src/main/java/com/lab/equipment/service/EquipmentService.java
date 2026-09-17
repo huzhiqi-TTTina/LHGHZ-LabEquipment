@@ -57,10 +57,13 @@ public class EquipmentService extends ServiceImpl<EquipmentMapper, Equipment> {
         LambdaQueryWrapper<Equipment> wrapper = new LambdaQueryWrapper<>();
 
         if (StringUtils.hasText(query.getKeyword())) {
-            wrapper.and(w -> w.like(Equipment::getEquipmentName, query.getKeyword())
-                    .or().like(Equipment::getEquipmentNo, query.getKeyword())
-                    .or().like(Equipment::getBrand, query.getKeyword())
-                    .or().like(Equipment::getModel, query.getKeyword()));
+            if (query.getKeyword().matches("\\d+")) {
+                // 纯数字：按设备ID精确搜索
+                wrapper.eq(Equipment::getId, Long.parseLong(query.getKeyword()));
+            } else {
+                // 非数字：按设备名称模糊搜索
+                wrapper.like(Equipment::getEquipmentName, query.getKeyword());
+            }
         }
 
         // 排序

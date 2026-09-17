@@ -111,7 +111,7 @@ qr:
 
 # AI服务配置（通义千问 Qwen 模型）
 ai:
-  provider: qwen  # 通义千问
+    provider: qwen  # 通义千问
     api-url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions # 讯飞平台OpenAI兼容端点
     api-key:
     model: qwen-plus  # 讯飞平台modelId（平台显示Qwen3.6-35B-A3B，但调用时用此ID）
