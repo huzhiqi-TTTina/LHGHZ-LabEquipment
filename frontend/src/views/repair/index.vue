@@ -17,7 +17,7 @@
 
     <el-card>
       <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column type="index" label="序号" width="60" :index="repairIndexRange" />
         <el-table-column prop="repairNo" label="报修编号" width="180" />
         <el-table-column label="设备" width="200">
           <template #default="{ row }">
@@ -265,6 +265,9 @@ const getRepairList = async () => {
     loading.value = false
   }
 }
+
+//自增序号
+const repairIndexRange = (index) => (queryForm.current - 1) * queryForm.size + index + 1
 
 const handleSearch = () => {
   queryForm.current = 1

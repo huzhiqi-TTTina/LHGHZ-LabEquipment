@@ -49,7 +49,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" />
-        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column type="index" label="序号" width="60" :index="userIndexRange" />
         <el-table-column prop="username" label="用户名" width="120" />
         <el-table-column prop="realName" label="真实姓名" width="120" />
         <el-table-column prop="studentNo" label="学号/工号" width="130" />
@@ -309,6 +309,9 @@ const getUserList = async () => {
     loading.value = false
   }
 }
+
+//自增序号
+const userIndexRange = (index) => (queryForm.page - 1) * queryForm.size + index + 1
 
 // 搜索
 const handleSearch = () => {

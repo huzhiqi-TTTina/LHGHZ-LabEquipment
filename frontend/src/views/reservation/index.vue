@@ -17,7 +17,7 @@
     <!-- 数据表格 -->
     <el-card>
       <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column type="index" label="序号" width="60" :index="reservationIndexRange" />
         <el-table-column prop="reservationNo" label="预约编号" width="150" />
         <el-table-column prop="equipmentName" label="设备名称" width="100" />
         <el-table-column prop="equipmentId" label="设备ID" width="70" />
@@ -181,6 +181,9 @@ const getReservationList = async () => {
     loading.value = false
   }
 }
+
+//自增序号
+const reservationIndexRange = (index) => (queryForm.current - 1) * queryForm.size + index + 1
 
 const handleSearch = () => {
   queryForm.current = 1

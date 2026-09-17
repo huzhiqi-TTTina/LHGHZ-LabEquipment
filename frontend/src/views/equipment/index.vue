@@ -20,7 +20,7 @@
     <!-- 数据表格 -->
     <el-card>
       <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column type="index" label="序号" width="60" :index="equipmentIndexRange" />
         <el-table-column label="图片" width="80">
           <template #default="{ row }">
             <el-image
@@ -329,6 +329,9 @@ const getEquipmentList = async () => {
     loading.value = false
   }
 }
+
+//自增序号
+const equipmentIndexRange = (index) => (queryForm.current - 1) * queryForm.size + index + 1
 
 // 搜索
 const handleSearch = () => {

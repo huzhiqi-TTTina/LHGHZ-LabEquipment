@@ -10,7 +10,7 @@
 
     <el-card>
       <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column type="index" label="序号" width="60" :index="myReservationIndexRange" />
         <el-table-column prop="reservationNo" label="预约编号" width="180" />
         <el-table-column prop="equipmentId" label="设备ID" width="100" />
         <el-table-column prop="startTime" label="开始时间" width="180" />
@@ -134,6 +134,9 @@ const getEquipmentList = async () => {
     ElMessage.error('获取设备列表失败')
   }
 }
+
+//自增序号
+const myReservationIndexRange = (index) => (queryForm.current - 1) * queryForm.size + index + 1
 
 const getStatusType = (status) => {
   const map = {
