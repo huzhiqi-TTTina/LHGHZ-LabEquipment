@@ -106,7 +106,7 @@ file:
 # 二维码配置
 qr:
   code:
-    base.url: http://192.168.50.76:8080  # 已配置为当前电脑IP，手机热点环境
+    base.url: http://10.21.55.210:8080  # 已配置为当前电脑IP，手机热点环境
     # - 公网访问：https://your-domain.com
 
 # AI服务配置（通义千问 Qwen 模型）
