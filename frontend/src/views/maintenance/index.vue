@@ -551,9 +551,7 @@ onMounted(() => {
   }
   getEquipmentList()
   // 如果是学生，获取分配给自己的任务
-  if (!isAdminOrTeacher.value) {
-    getMyPlans()
-  }
+  getMyPlans()
 })
 </script>
 

@@ -95,6 +95,8 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.requiresAuth !== false && !token) {
     next({ name: 'Login', query: { redirect: to.fullPath } })
+  } else if (to.meta.adminOnly && !userStore.isAdmin) {
+    next({ name: "Dashboard" })
   } else if (to.name === 'Login' && token) {
     next({ name: 'Dashboard' })
   } else {
