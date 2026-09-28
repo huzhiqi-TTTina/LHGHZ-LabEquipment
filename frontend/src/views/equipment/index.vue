@@ -21,27 +21,6 @@
     <el-card>
       <el-table :data="tableData" v-loading="loading" border stripe>
         <el-table-column type="index" label="序号" width="60" :index="equipmentIndexRange" />
-        <el-table-column label="图片" width="80">
-          <template #default="{ row }">
-            <el-image
-              v-if="row.imageUrl"
-              :src="getImageUrl(row.imageUrl)"
-              fit="cover"
-              style="width: 50px; height: 50px; border-radius: 4px; cursor: pointer;"
-              :preview-src-list="[getImageUrl(row.imageUrl)]"
-              preview-teleported
-            >
-              <template #error>
-                <div style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">
-                  <el-icon><icon-picture /></el-icon>
-                </div>
-              </template>
-            </el-image>
-            <div v-else style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px; color: #999;">
-              <el-icon><icon-picture /></el-icon>
-            </div>
-          </template>
-        </el-table-column>
         <el-table-column prop="uniqueCode" label="唯一标识码" width="120">
           <template #default="{ row }">
             <el-tag type="info" size="small">{{ row.uniqueCode || '-' }}</el-tag>
@@ -140,33 +119,6 @@
         <el-form-item label="描述">
           <el-input v-model="formData.description" type="textarea" :rows="3" placeholder="请输入描述" />
         </el-form-item>
-        <el-form-item label="设备图片">
-          <div class="image-upload-container">
-            <el-upload
-              class="equipment-image-uploader"
-              :show-file-list="false"
-              :before-upload="beforeImageUpload"
-              :http-request="handleImageUpload"
-              accept="image/*"
-            >
-              <div v-if="formData.imageUrl" class="image-preview">
-                <el-image
-                  :src="getImageUrl(formData.imageUrl)"
-                  fit="cover"
-                  style="width: 120px; height: 120px; border-radius: 6px;"
-                />
-                <div class="image-actions">
-                  <el-button type="danger" size="small" :icon="Delete" circle @click.stop="handleRemoveImage" />
-                </div>
-              </div>
-              <div v-else class="upload-placeholder">
-                <el-icon><upload-filled /></el-icon>
-                <span>点击上传图片</span>
-              </div>
-            </el-upload>
-            <div class="upload-tip">支持 JPG、PNG 格式，最大 10MB</div>
-          </div>
-        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -262,9 +214,9 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { equipmentApi, fileApi } from '@/api'
+import { equipmentApi } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, RefreshRight, Plus, Download, Picture as IconPicture, UploadFilled, Delete } from '@element-plus/icons-vue'
+import { Search, Refresh, RefreshRight, Plus, Download, Picture as IconPicture } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
 
@@ -370,8 +322,7 @@ const showAddDialog = () => {
     purchaseDate: '',
     purchasePrice: null,
     supplier: '',
-    description: '',
-    imageUrl: ''
+    description: ''
   })
   dialogVisible.value = true
 }
@@ -385,13 +336,8 @@ const showEditDialog = (row) => {
 
 // 显示详情
 const showDetail = (row) => {
-  const imageHtml = row.imageUrl 
-    ? `<p style="text-align: center; margin: 15px 0;"><img src="${getImageUrl(row.imageUrl)}" style="max-width: 300px; max-height: 200px; border-radius: 8px; border: 1px solid #ddd;" /></p>`
-    : ''
-  
   ElMessageBox.alert(`
     <div style="line-height: 2;">
-      ${imageHtml}
       <p><strong>设备编号：</strong>${row.equipmentNo}</p>
       <p><strong>设备名称：</strong>${row.equipmentName}</p>
       <p><strong>品牌：</strong>${row.brand || '-'}</p>
@@ -579,53 +525,8 @@ const handleRegenerateAllQrCodes = async () => {
 getEquipmentList()
 
 // ==================== 图片上传相关 ====================
+//图片类功能已经移除
 
-// 处理图片URL，添加 /api 前缀
-const getImageUrl = (url) => {
-  if (!url) return ''
-  if (url.startsWith('http')) return url
-  return url.startsWith('/api') ? url : '/api' + url
-}
-
-// 上传前校验
-const beforeImageUpload = (file) => {
-  const isImage = file.type.startsWith('image/')
-  const isLt10M = file.size / 1024 / 1024 < 10
-
-  if (!isImage) {
-    ElMessage.error('只能上传图片文件！')
-    return false
-  }
-  if (!isLt10M) {
-    ElMessage.error('图片大小不能超过 10MB！')
-    return false
-  }
-  return true
-}
-
-// 处理图片上传
-const handleImageUpload = async (options) => {
-  const { file, onSuccess, onError } = options
-  try {
-    const res = await fileApi.upload(file)
-    if (res.code === 200 || res.code === 0) {
-      formData.imageUrl = res.data || res.url
-      ElMessage.success('图片上传成功')
-      onSuccess(res)
-    } else {
-      ElMessage.error(res.message || '图片上传失败')
-      onError(new Error(res.message))
-    }
-  } catch (error) {
-    ElMessage.error('图片上传失败')
-    onError(error)
-  }
-}
-
-// 删除图片
-const handleRemoveImage = () => {
-  formData.imageUrl = ''
-}
 </script>
 
 <style lang="scss" scoped>
@@ -650,72 +551,6 @@ const handleRemoveImage = () => {
     .el-icon {
       font-size: 48px;
       margin-bottom: 10px;
-    }
-  }
-
-  // 图片上传样式
-  .image-upload-container {
-    .equipment-image-uploader {
-      .upload-placeholder {
-        width: 120px;
-        height: 120px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        border: 1px dashed #d9d9d9;
-        border-radius: 6px;
-        background: #fafafa;
-        cursor: pointer;
-        transition: all 0.3s;
-
-        &:hover {
-          border-color: #409eff;
-          background: #ecf5ff;
-        }
-
-        .el-icon {
-          font-size: 28px;
-          color: #8c939d;
-          margin-bottom: 8px;
-        }
-
-        span {
-          font-size: 12px;
-          color: #8c939d;
-        }
-      }
-
-      .image-preview {
-        position: relative;
-        width: 120px;
-        height: 120px;
-
-        .image-actions {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: rgba(0, 0, 0, 0.5);
-          border-radius: 6px;
-          opacity: 0;
-          transition: opacity 0.3s;
-
-          &:hover {
-            opacity: 1;
-          }
-        }
-      }
-    }
-
-    .upload-tip {
-      margin-top: 8px;
-      font-size: 12px;
-      color: #999;
     }
   }
 }
