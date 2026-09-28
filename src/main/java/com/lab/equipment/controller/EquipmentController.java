@@ -15,8 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 import java.io.IOException;
+import java.util.List;
 
 /**
  * 设备控制器
@@ -83,7 +83,7 @@ public class EquipmentController {
     @PostMapping("/{id}/borrow")
     @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> borrow(@PathVariable Long id, @RequestParam Long userId,
-                                @RequestParam(required = false) String purpose) {
+                               @RequestParam(required = false) String purpose) {
         equipmentService.borrowEquipment(id, userId, purpose);
         return Result.success("设备出库成功", null);
     }
@@ -94,7 +94,7 @@ public class EquipmentController {
     @PostMapping("/{id}/return")
     @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> returnEquipment(@PathVariable Long id,
-                                         @RequestParam(defaultValue = "GOOD") String condition) {
+                                        @RequestParam(defaultValue = "GOOD") String condition) {
         equipmentService.returnEquipment(id, condition);
         return Result.success("设备归还成功", null);
     }
@@ -106,7 +106,7 @@ public class EquipmentController {
     @PreAuthorize("hasRole('ADMIN')")
     public void export(HttpServletResponse response) throws IOException {
         equipmentService.exportEquipmentList(response);
-    }
+    }//Bug
 
     /**
      * 获取二维码（通过设备ID）
@@ -136,4 +136,13 @@ public class EquipmentController {
         equipmentService.regenerateQrCode(id);
         return Result.success("二维码重新生成成功", null);
     }
+    /**
+     * 获取可预约的设备列表（只返回状态为“正常”的设备）
+     */
+    @GetMapping("/available")
+    public Result<List<EquipmentVO>> listAvailable() {
+        List<EquipmentVO> list = equipmentService.listAvailable();
+        return Result.success(list);
+    }
+
 }

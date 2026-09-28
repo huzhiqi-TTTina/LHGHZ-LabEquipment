@@ -34,7 +34,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 /**
  * 设备服务
  */
@@ -341,4 +340,20 @@ public class EquipmentService extends ServiceImpl<EquipmentMapper, Equipment> {
                 return status;
         }
     }
+    /**
+     * 查询可预约的设备列表（只返回状态为“正常”的设备）
+     */
+    public List<EquipmentVO> listAvailable() {
+        List<Equipment> list = equipmentMapper.selectList(
+                new LambdaQueryWrapper<Equipment>()
+                        .eq(Equipment::getStatus, EquipmentStatus.NORMAL)
+        );
+
+        List<EquipmentVO> voList = new ArrayList<>();
+        for (Equipment equipment : list) {
+            voList.add(convertToVO(equipment));
+        }
+        return voList;
+    }
+
 }
