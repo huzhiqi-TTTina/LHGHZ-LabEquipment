@@ -39,15 +39,6 @@ public class EquipmentController {
     }
 
     /**
-     * 根据ID获取设备详情
-     */
-    @GetMapping("/{id}")
-    public Result<EquipmentVO> getById(@PathVariable Long id) {
-        EquipmentVO equipment = equipmentService.getEquipmentById(id);
-        return Result.success(equipment);
-    }
-
-    /**
      * 新增设备（管理员）
      */
     @PostMapping
@@ -109,15 +100,6 @@ public class EquipmentController {
     }//Bug
 
     /**
-     * 获取二维码（通过设备ID）
-     */
-    @GetMapping("/{id}/qrcode")
-    public Result<EquipmentVO> getQrCode(@PathVariable Long id) {
-        EquipmentVO equipment = equipmentService.getEquipmentById(id);
-        return Result.success(equipment);
-    }
-
-    /**
      * 批量重新生成所有设备的二维码（管理员）
      */
     @PostMapping("/qrcode/regenerate-all")
@@ -137,7 +119,7 @@ public class EquipmentController {
         return Result.success("二维码重新生成成功", null);
     }
     /**
-     * 获取可预约的设备列表（只返回状态为“正常”的设备）
+     * 获取可预约的设备列表（只返回状态为“正常”的设备）   前端未进行调用，之后处理
      */
     @GetMapping("/available")
     public Result<List<EquipmentVO>> listAvailable() {

@@ -91,17 +91,6 @@ public class EquipmentService extends ServiceImpl<EquipmentMapper, Equipment> {
     }
 
     /**
-     * 根据ID获取设备详情
-     */
-    public EquipmentVO getEquipmentById(Long id) {
-        Equipment equipment = equipmentMapper.selectById(id);
-        if (equipment == null) {
-            throw new RuntimeException("设备不存在");
-        }
-        return convertToVO(equipment);
-    }
-
-    /**
      * 新增设备
      */
     @Transactional(rollbackFor = Exception.class)

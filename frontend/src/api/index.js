@@ -26,10 +26,6 @@ export const equipmentApi = {
   getList(params) {
     return request.get('/equipment/list', { params })
   },
-  // 获取设备详情
-  getById(id) {
-    return request.get(`/equipment/${id}`)
-  },
   // 新增设备
   add(data) {
     return request.post('/equipment', data)
