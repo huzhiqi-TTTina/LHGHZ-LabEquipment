@@ -125,6 +125,10 @@ export const repairApi = {
   // 获取分配给我的报修任务
   getMyTasks(params) {
     return request.get('/repair/my-tasks', { params })
+  },
+  //获取报修任务分配统计（管理员）
+  getTaskStats() {
+    return request.get('/repair/stats')
   }
 }
 

@@ -45,7 +45,7 @@
         <el-table-column label="操作" width="300" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="showDetail(row)">详情</el-button>
-            <el-button v-if="isAdminOrTeacher && row.status === 'PENDING'" type="success" link size="small" @click="showAssignDialog(row)">分配</el-button>
+            <el-button v-if="userStore.isAdmin && row.status === 'PENDING'" type="success" link size="small" @click="showAssignDialog(row)">分配</el-button>
             <el-button v-if="isAdminOrTeacher && row.status === 'PENDING'" type="primary" link size="small" @click="handleStart(row)">开始处理</el-button>
             <el-button v-if="canComplete(row)" type="success" link size="small" @click="showCompleteDialog(row)">完成</el-button>
           </template>
@@ -136,7 +136,19 @@
               :key="teacher.id"
               :label="`${teacher.realName} (${teacher.username})`"
               :value="teacher.id"
-            />
+            >
+              <span>{{ teacher.realName }} ({{ teacher.username }})</span>
+              <span
+                  :style="{
+                float:'right',
+                fontSize:'12px',
+                fontWeight:'bold',
+                color:getTaskCountColor(getTeacherTaskCount(teacher.id))
+                  }"
+              >
+                {{ getTaskCountText(getTeacherTaskCount(teacher.id)) }}
+              </span>
+            </el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -212,6 +224,13 @@ const equipmentList = ref([])
 const teacherList = ref([])
 const myTasksData = ref([])
 const myTasksLoading = ref(false)
+
+const taskStats = ref({
+  totalRepairTasks: 0,
+  pendingRepairTasks: 0,
+  processingRepairTasks: 0,
+  repairTaskCounts: []
+})
 
 // 是否是管理员或老师
 const isAdminOrTeacher = computed(() => userStore.isAdmin || userStore.role === 'TEACHER')
@@ -402,6 +421,7 @@ const handleAssign = async () => {
     ElMessage.success('任务分配成功')
     assignDialogVisible.value = false
     getRepairList()
+    getTaskStats()
   } catch (error) {
     ElMessage.error('分配失败')
   }
@@ -462,6 +482,36 @@ const getTeacherList = async () => {
   }
 }
 
+// 获取报修任务统计
+const getTaskStats = async () => {
+  if(!userStore.isAdmin) return
+  try{
+    const res = await repairApi.getTaskStats()
+    taskStats.value = res.data || taskStats.value
+  }catch(error){
+    ElMessage.error('获取任务统计失败')
+  }
+}
+
+// 查某个老师当前"在办"的任务数
+const getTeacherTaskCount = (userID) =>{
+  const list = taskStats.value.repairTaskCounts || []
+  const found = list.find(item => item.userId === userID)
+  return found ? found.taskCount : 0
+}
+
+const getTaskCountText = (count) =>{
+  if(count === null || count === undefined) return '-'
+  return count === 0 ? '空闲' : `报修待办 ${count}`
+}
+
+const getTaskCountColor = (count) =>{
+  if(count === null || count === undefined) return '#909399'
+  if(count > 4) return '#f56c6c'
+  if(count > 0) return '#e6a23c'
+  return '#67c23a'
+}
+
 onMounted(() => {
   getRepairList()
   getEquipmentList()
@@ -469,6 +519,7 @@ onMounted(() => {
   if (isAdminOrTeacher.value) {
     getTeacherList()
   }
+  getTaskStats()
 })
 
 // ==================== 图片上传相关 ====================
