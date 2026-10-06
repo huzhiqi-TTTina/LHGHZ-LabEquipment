@@ -16,6 +16,7 @@ import com.lab.equipment.mapper.EquipmentCategoryMapper;
 import com.lab.equipment.mapper.EquipmentMapper;
 import com.lab.equipment.mapper.LaboratoryMapper;
 import com.lab.equipment.mapper.SysUserMapper;
+import com.lab.equipment.util.ExcelUtil;
 import com.lab.equipment.util.QrCodeUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +48,7 @@ public class EquipmentService extends ServiceImpl<EquipmentMapper, Equipment> {
     private final LaboratoryMapper laboratoryMapper;
     private final SysUserMapper userMapper;
     private final QrCodeUtil qrCodeUtil;
-
+    private final ExcelUtil excelUtil;
     /**
      * 分页查询设备列表
      */
@@ -214,8 +215,7 @@ public class EquipmentService extends ServiceImpl<EquipmentMapper, Equipment> {
      */
     public void exportEquipmentList(HttpServletResponse response) throws IOException {
         List<Equipment> equipmentList = equipmentMapper.selectList(null);
-        // 这里需要实现Excel导出逻辑
-        // 简化版：实际应使用ExcelUtil
+        excelUtil.exportExcel(response, equipmentList, "设备列表", "设备列表");
     }
 
     /**
