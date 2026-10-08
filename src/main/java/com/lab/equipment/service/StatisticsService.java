@@ -3,6 +3,7 @@ package com.lab.equipment.service;
 import com.lab.equipment.dto.StatisticsDTO;
 import com.lab.equipment.entity.BorrowRecord;
 import com.lab.equipment.entity.Equipment;
+import com.lab.equipment.entity.EquipmentCategory;        // 新增
 import com.lab.equipment.entity.EquipmentReservation;
 import com.lab.equipment.entity.RepairRequest;
 import com.lab.equipment.enums.EquipmentStatus;
@@ -10,6 +11,7 @@ import com.lab.equipment.enums.RepairStatus;
 import com.lab.equipment.enums.ReservationStatus;
 import com.lab.equipment.mapper.BorrowRecordMapper;
 import com.lab.equipment.mapper.EquipmentMapper;
+import com.lab.equipment.mapper.EquipmentCategoryMapper;   // 新增
 import com.lab.equipment.mapper.EquipmentReservationMapper;
 import com.lab.equipment.mapper.RepairRequestMapper;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,7 +26,14 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;                                // 新增
 import java.util.Date;
+import java.util.HashMap;                                  // 新增
+import java.util.List;                                     // 新增
+import java.util.Map;                                      // 新增
+import java.util.stream.Collectors;                        // 新增
+
+
 
 /**
  * 统计服务
@@ -37,7 +46,7 @@ public class StatisticsService {
     private final BorrowRecordMapper borrowRecordMapper;
     private final EquipmentReservationMapper reservationMapper;
     private final RepairRequestMapper repairRequestMapper;
-
+    private final EquipmentCategoryMapper categoryMapper;
     /**
      * 获取统计数据
      */
@@ -106,9 +115,36 @@ public class StatisticsService {
      * 获取设备按分类统计
      */
     public Object getEquipmentByCategory() {
-        // 返回设备按分类统计的数据
-        // 这里简化实现
-        return null;
+        // 1. 查出所有设备
+        List<Equipment> equipments = equipmentMapper.selectList(null);
+
+        // 2. 按 categoryId 分组，统计每类有多少台
+        Map<Long, Long> countByCategory = equipments.stream()
+                .filter(e -> e.getCategoryId() != null)
+                .collect(Collectors.groupingBy(
+                        Equipment::getCategoryId,
+                        Collectors.counting()
+                ));
+
+        // 3. 查出所有类别，把 categoryId → categoryName 做成映射
+        List<EquipmentCategory> categories = categoryMapper.selectList(null);
+        Map<Long, String> categoryNameMap = categories.stream()
+                .collect(Collectors.toMap(
+                        EquipmentCategory::getId,
+                        EquipmentCategory::getCategoryName
+                ));
+
+        // 4. 拼装返回结果
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<Long, Long> entry : countByCategory.entrySet()) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("categoryId", entry.getKey());
+            item.put("categoryName", categoryNameMap.getOrDefault(entry.getKey(), "未分类"));
+            item.put("count", entry.getValue());
+            result.add(item);
+        }
+
+        return result;
     }
 
     /**
