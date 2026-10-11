@@ -41,7 +41,7 @@
     <el-dialog v-model="dialogVisible" title="新增预约" width="600px">
       <el-form ref="formRef" :model="formData" :rules="rules" label-width="100px">
         <el-form-item label="选择设备" prop="equipmentId">
-          <el-select v-model="formData.equipmentId" placeholder="请选择设备" style="width: 100%">
+          <el-select v-model="formData.equipmentId" placeholder="请选择设备" style="width: 100%" filterable>
             <el-option
               v-for="equipment in equipmentList"
               :key="equipment.id"
@@ -128,8 +128,8 @@ const getMyList = async () => {
 
 const getEquipmentList = async () => {
   try {
-    const res = await equipmentApi.getList({})
-    equipmentList.value = res.data.records || []
+    const res = await equipmentApi.getAvailable()
+    equipmentList.value = res.data || []
   } catch (error) {
     ElMessage.error('获取设备列表失败')
   }

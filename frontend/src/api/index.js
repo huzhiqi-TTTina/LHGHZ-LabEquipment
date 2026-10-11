@@ -26,6 +26,9 @@ export const equipmentApi = {
   getList(params) {
     return request.get('/equipment/list', { params })
   },
+  getAvailable(){
+    return request.get(`/equipment/available`)
+  },
   // 新增设备
   add(data) {
     return request.post('/equipment', data)
