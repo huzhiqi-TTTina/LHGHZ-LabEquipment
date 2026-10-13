@@ -28,6 +28,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
 /**
  * 设备预约服务
  */
@@ -228,9 +231,11 @@ public class ReservationService extends ServiceImpl<EquipmentReservationMapper, 
     /**
      * 生成预约编号
      */
+    private static final Map<String, AtomicInteger> SEQ_MAP = new ConcurrentHashMap<>();
+
     private String generateReservationNo() {
         String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        int randomNum = ThreadLocalRandom.current().nextInt(100, 1000);
-        return "RES" + dateStr + randomNum;//末尾不是流水号，需要改动
+        int seq = SEQ_MAP.computeIfAbsent(dateStr, k -> new AtomicInteger(0)).incrementAndGet();
+        return "RES" + dateStr + String.format("%04d", seq);
     }
 }
