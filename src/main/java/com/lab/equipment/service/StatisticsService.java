@@ -1,6 +1,7 @@
 package com.lab.equipment.service;
 
 import com.lab.equipment.dto.StatisticsDTO;
+import com.lab.equipment.dto.UtilizationTrendDTO;
 import com.lab.equipment.entity.BorrowRecord;
 import com.lab.equipment.entity.Equipment;
 import com.lab.equipment.entity.EquipmentCategory;        // 新增
@@ -24,8 +25,10 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;                                // 新增
 import java.util.Date;
 import java.util.HashMap;                                  // 新增
@@ -89,9 +92,9 @@ public class StatisticsService {
 
         // 计算利用率
         Long availableCount = equipmentMapper.countByStatus(EquipmentStatus.NORMAL.name())
-                + equipmentMapper.countByStatus(EquipmentStatus.BORROWED.name());
+                + equipmentMapper.countByStatus(EquipmentStatus.BORROWED.name() );
         if (dto.getTotalEquipment() > 0) {
-            dto.setUtilizationRate((double) dto.getBorrowedEquipment() / dto.getTotalEquipment() * 100);
+            dto.setUtilizationRate((double) dto.getBorrowedEquipment() /availableCount * 100);
         }
 
         // 计算损坏率（这里简化为维修中设备比例）
@@ -105,10 +108,36 @@ public class StatisticsService {
     /**
      * 获取设备利用率趋势数据
      */
-    public Object getUtilizationTrend(Integer days) {
+    public List<UtilizationTrendDTO> getUtilizationTrend(Integer days) {
         // 返回最近N天的利用率数据
         // 这里简化实现，实际需要编写更复杂的SQL
-        return null;
+        if(days==null||days<=0){
+            days=5;
+        }
+        List<UtilizationTrendDTO> list=equipmentMapper.selectUtilizationTrend(days);
+        List<UtilizationTrendDTO> resultList = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+
+        for (int i = days - 1; i >= 0; i--) {
+            String dateStr = today.minusDays(i).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+            // 在查询结果中找这一天的数据
+            UtilizationTrendDTO dto = list.stream()
+                    .filter(item -> dateStr.equals(item.getDate()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (dto != null) {
+                resultList.add(dto);
+            } else {
+                UtilizationTrendDTO emptyDto = new UtilizationTrendDTO();
+                emptyDto.setDate(dateStr);
+                emptyDto.setUtilizationRate(0.0);
+                resultList.add(emptyDto);
+            }
+        }
+
+        return resultList;
     }
 
     /**

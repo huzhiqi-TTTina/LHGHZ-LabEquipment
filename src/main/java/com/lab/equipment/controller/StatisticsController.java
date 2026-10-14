@@ -3,11 +3,13 @@ package com.lab.equipment.controller;
 import com.lab.equipment.common.Result;
 import com.lab.equipment.dto.StatisticsDTO;
 import com.lab.equipment.service.StatisticsService;
+import com.lab.equipment.dto.UtilizationTrendDTO;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * 统计报表控制器
@@ -32,8 +34,8 @@ public class StatisticsController {
      * 获取设备利用率趋势
      */
     @GetMapping("/utilization-trend")
-    public Result<Object> getUtilizationTrend(@RequestParam(defaultValue = "7") Integer days) {
-        Object trend = statisticsService.getUtilizationTrend(days);
+    public Result<Object> getUtilizationTrend(@RequestParam(defaultValue = "5") Integer days) {
+        List<UtilizationTrendDTO> trend=statisticsService.getUtilizationTrend(days);
         return Result.success(trend);
     }
 
