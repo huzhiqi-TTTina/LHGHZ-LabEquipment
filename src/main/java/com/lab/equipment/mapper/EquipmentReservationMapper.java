@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Select;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 /**
  * 设备预约Mapper接口
  */
@@ -23,6 +24,7 @@ public interface EquipmentReservationMapper extends BaseMapper<EquipmentReservat
             "LEFT JOIN sys_user u ON a.user_id = u.id " +
             "ORDER BY a.create_time DESC")
     List<EquipmentReservation> selectReservationList();
+
     /**
      * 查询设备预约冲突的记录
      */
@@ -33,4 +35,10 @@ public interface EquipmentReservationMapper extends BaseMapper<EquipmentReservat
             @Param("equipmentId") Long equipmentId,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 查询流水号
+     */
+    @Select("SELECT MAX(reservation_no) FROM equipment_reservation WHERE reservation_no LIKE CONCAT(#{prefix}, '%')")
+    String selectMaxNoByPrefix(@Param("prefix") String prefix);
 }

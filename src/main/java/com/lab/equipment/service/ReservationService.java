@@ -24,13 +24,10 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Map;
+
 /**
  * 设备预约服务
  */
@@ -231,11 +228,15 @@ public class ReservationService extends ServiceImpl<EquipmentReservationMapper, 
     /**
      * 生成预约编号
      */
-    private static final Map<String, AtomicInteger> SEQ_MAP = new ConcurrentHashMap<>();
-
     private String generateReservationNo() {
         String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        int seq = SEQ_MAP.computeIfAbsent(dateStr, k -> new AtomicInteger(0)).incrementAndGet();
-        return "RES" + dateStr + String.format("%04d", seq);
+        String prefix = "RES" + dateStr;
+        String maxNo = reservationMapper.selectMaxNoByPrefix(prefix);
+        int seq = 1;
+        if (maxNo != null && maxNo.length() == 15) {
+            seq = Integer.parseInt(maxNo.substring(maxNo.length() - 4)) + 1;
+        }
+        return prefix + String.format("%04d", seq);
     }
 }
+

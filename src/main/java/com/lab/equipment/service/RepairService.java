@@ -25,7 +25,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
-
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.time.LocalDate;
 /**
  * 故障报修服务
  */
@@ -252,8 +256,15 @@ public class RepairService extends ServiceImpl<RepairRequestMapper, RepairReques
      * 生成报修编号
      */
     private String generateRepairNo() {
-        return "REP"+System.currentTimeMillis();
-}
+        String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String prefix = "REP" + dateStr;
+        String maxNo = repairRequestMapper.selectMaxNoByPrefix(prefix);
+        int seq = 1;
+        if (maxNo != null && maxNo.length() == 15) {
+            seq = Integer.parseInt(maxNo.substring(maxNo.length() - 4)) + 1;
+        }
+        return prefix + String.format("%04d", seq);
+    }
 
     /**
      * 获取所有老师用户（用于任务分配）
