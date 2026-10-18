@@ -80,37 +80,6 @@
         <el-form-item label="故障描述" prop="faultDescription">
           <el-input v-model="formData.faultDescription" type="textarea" :rows="4" placeholder="请描述故障现象" />
         </el-form-item>
-        <el-form-item label="故障图片">
-          <div class="fault-image-upload">
-            <!-- 已上传的图片列表 -->
-            <div class="uploaded-images" v-if="uploadedImages.length > 0">
-              <div v-for="(url, index) in uploadedImages" :key="index" class="image-item">
-                <el-image
-                  :src="getImageUrl(url)"
-                  fit="cover"
-                  style="width: 80px; height: 80px; border-radius: 4px;"
-                />
-                <div class="image-mask">
-                  <el-icon @click="removeImage(index)"><delete /></el-icon>
-                </div>
-              </div>
-            </div>
-            <!-- 上传按钮 -->
-            <el-upload
-              class="fault-uploader"
-              :show-file-list="false"
-              :before-upload="beforeImageUpload"
-              :http-request="handleImageUpload"
-              accept="image/*"
-            >
-              <div class="upload-placeholder">
-                <el-icon><upload-filled /></el-icon>
-                <span>上传图片</span>
-              </div>
-            </el-upload>
-          </div>
-          <div class="upload-tip">支持多张图片，最多 5 张，每张最大 10MB</div>
-        </el-form-item>
         <el-form-item label="优先级">
           <el-radio-group v-model="formData.priority">
             <el-radio label="LOW">低</el-radio>
@@ -206,9 +175,9 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { repairApi, equipmentApi, userApi, fileApi } from '@/api'
+import { repairApi, equipmentApi, userApi } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, Plus, User, Picture as IconPicture, UploadFilled, Delete } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, User } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
 const loading = ref(false)
@@ -244,7 +213,6 @@ const queryForm = reactive({
 const formData = reactive({
   equipmentId: null,
   faultDescription: '',
-  faultImageUrls: '',  // 故障图片URLs（逗号分隔）
   priority: 'NORMAL'
 })
 
@@ -337,7 +305,7 @@ const getHandlerName = (handlerId) => {
 }
 
 const showAddDialog = () => {
-  Object.assign(formData, { equipmentId: null, faultDescription: '', faultImageUrls: '', priority: 'NORMAL' })
+  Object.assign(formData, { equipmentId: null, faultDescription: '', priority: 'NORMAL' })
   dialogVisible.value = true
 }
 
@@ -346,23 +314,8 @@ const showDetail = (row) => {
   const equipmentName = equipment ? `${equipment.equipmentName} (${equipment.equipmentNo})` : `设备ID: ${row.equipmentId}`
   const handlerName = getHandlerName(row.handlerId)
   
-  // 生成图片HTML
-  let imagesHtml = ''
-  if (row.faultImageUrls) {
-    const urls = row.faultImageUrls.split(',')
-    if (urls.length > 0) {
-      imagesHtml = '<div style="margin: 15px 0; text-align: center;">'
-      urls.forEach(url => {
-        const fullUrl = getImageUrl(url.trim())
-        imagesHtml += `<img src="${fullUrl}" style="max-width: 200px; max-height: 150px; margin: 5px; border-radius: 4px; border: 1px solid #ddd;" />`
-      })
-      imagesHtml += '</div>'
-    }
-  }
-  
   ElMessageBox.alert(`
     <div style="line-height: 2;">
-      ${imagesHtml}
       <p><strong>报修编号：</strong>${row.repairNo}</p>
       <p><strong>设备：</strong>${equipmentName}</p>
       <p><strong>故障描述：</strong>${row.faultDescription}</p>
@@ -522,79 +475,6 @@ onMounted(() => {
   getTaskStats()
 })
 
-// ==================== 图片上传相关 ====================
-
-const uploadedImages = ref([])
-
-// 处理图片URL，添加 /api 前缀
-const getImageUrl = (url) => {
-  if (!url) return ''
-  if (url.startsWith('http')) return url
-  return url.startsWith('/api') ? url : '/api' + url
-}
-
-// 获取第一张图片URL（用于表格缩略图）
-const getFirstImageUrl = (faultImageUrls) => {
-  if (!faultImageUrls) return ''
-  const urls = faultImageUrls.split(',')
-  return getImageUrl(urls[0])
-}
-
-// 获取图片列表（用于预览）
-const getImageList = (faultImageUrls) => {
-  if (!faultImageUrls) return []
-  const urls = faultImageUrls.split(',').map(url => getImageUrl(url.trim()))
-  return urls
-}
-
-// 上传前校验
-const beforeImageUpload = (file) => {
-  const isImage = file.type.startsWith('image/')
-  const isLt10M = file.size / 1024 / 1024 < 10
-  const hasRoom = uploadedImages.value.length < 5
-
-  if (!isImage) {
-    ElMessage.error('只能上传图片文件！')
-    return false
-  }
-  if (!isLt10M) {
-    ElMessage.error('图片大小不能超过 10MB！')
-    return false
-  }
-  if (!hasRoom) {
-    ElMessage.error('最多只能上传 5 张图片！')
-    return false
-  }
-  return true
-}
-
-// 处理图片上传
-const handleImageUpload = async (options) => {
-  const { file, onSuccess, onError } = options
-  try {
-    const res = await fileApi.upload(file)
-    if (res.code === 200 || res.code === 0) {
-      const imageUrl = res.data || res.url
-      uploadedImages.value.push(imageUrl)
-      // 更新表单数据
-      formData.faultImageUrls = uploadedImages.value.join(',')
-      ElMessage.success('图片上传成功')
-      onSuccess(res)
-    } else {
-      ElMessage.error(res.message || '图片上传失败')
-      onError(new Error(res.message))
-    }
-  } catch (error) {
-    ElMessage.error('图片上传失败')
-    onError(error)
-  }
-}
-
-// 删除图片
-const removeImage = (index) => {
-  uploadedImages.value.splice(index, 1)
-  formData.faultImageUrls = uploadedImages.value.join(',')
-}
 </script>
 
 <style lang="scss" scoped>
@@ -603,89 +483,6 @@ const removeImage = (index) => {
     margin-top: 20px;
     display: flex;
     justify-content: flex-end;
-  }
-
-  // 故障图片上传样式
-  .fault-image-upload {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-
-    .uploaded-images {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-
-      .image-item {
-        position: relative;
-        width: 80px;
-        height: 80px;
-        border-radius: 4px;
-        overflow: hidden;
-
-        .image-mask {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: rgba(0, 0, 0, 0.5);
-          opacity: 0;
-          transition: opacity 0.3s;
-          cursor: pointer;
-
-          .el-icon {
-            font-size: 20px;
-            color: #fff;
-          }
-
-          &:hover {
-            opacity: 1;
-          }
-        }
-      }
-    }
-
-    .fault-uploader {
-      .upload-placeholder {
-        width: 80px;
-        height: 80px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        border: 1px dashed #d9d9d9;
-        border-radius: 4px;
-        background: #fafafa;
-        cursor: pointer;
-        transition: all 0.3s;
-
-        &:hover {
-          border-color: #409eff;
-          background: #ecf5ff;
-        }
-
-        .el-icon {
-          font-size: 20px;
-          color: #8c939d;
-          margin-bottom: 4px;
-        }
-
-        span {
-          font-size: 12px;
-          color: #8c939d;
-        }
-      }
-    }
-  }
-
-  .upload-tip {
-    margin-top: 8px;
-    font-size: 12px;
-    color: #999;
   }
 }
 </style>

@@ -62,7 +62,7 @@
         <el-card class="chart-card">
           <template #header>
             <div class="card-header">
-              <span>设备利用率</span>
+              <span>近5天设备利用率</span>
             </div>
           </template>
           <div ref="utilizationChartRef" style="height: 300px;"></div>
@@ -120,9 +120,23 @@ const statusChartRef = ref(null)
 const statistics = ref({})
 const todoList = ref([])
 
+const utilizationTrend = ref([])
+
+//获取利用率趋势
+const getUtilizationTrend = async () => {
+  try{
+    const res = await statisticsApi.getUtilizationTrend({days:5})
+    utilizationTrend.value = res.data || []
+  }catch (error) {
+    console.error('获取利用率趋势失败:', error)
+    utilizationTrend.value = []
+  }
+}
+
 // 获取统计数据
 const getStatistics = async () => {
   try {
+    await getUtilizationTrend()
     const res = await statisticsApi.getStatistics()
     statistics.value = res.data || {}
 
@@ -157,59 +171,56 @@ const initCharts = () => {
   // 利用率图表
   if (utilizationChartRef.value) {
     const chart = echarts.init(utilizationChartRef.value)
+    const dates=utilizationTrend.value.map(item =>(item.date ||'').slice(5))
+    const rates=utilizationTrend.value.map(item =>Number(item.utilizationRate || 0))
     chart.setOption({
+      title: utilizationTrend.value.length === 0
+        ?{
+          text:'暂无历史数据',
+            left: 'center',
+            top:'middle',
+            textStyle:{color:'#909399',fontSize:14,fontWeight:'normal'}
+          }
+        :undefined,
       tooltip: {
-        trigger: 'item',
-        formatter: '{b}: {c}%'
+        trigger: 'axis',
+        formatter: params=>{
+          const p=params[0]
+          return `${p.axisValue}<br>设备利用率：<b>${p.value}%</b>`
+        }
+      },
+      grid:{left:55,right:30,top:40,bottom:30},
+      xAxis:{
+        type:'category',
+        data:dates,
+        boundaryGap:false,
+        axisLine:{lineStyle:{color:'#dadfe6'}},
+        axisLabel:{color:'#606266'}
+      },
+      yAxis: {
+        type: 'value',
+        min: 0,
+        max: 100,
+        axisLabel: { formatter: '{value}%', color: '#606266' },
+        splitLine: { lineStyle: { type: 'dashed', color: '#ebeef5' } }
       },
       series: [
         {
-          type: 'gauge',
-          min: 0,
-          max: 100,
-          axisLine: {
-            lineStyle: {
-              width: 30,
-              color: [[0.3, '#67c23a'], [0.7, '#e6a23c'], [1, '#f56c6c']]
-            }
+          name:'设备利用率',
+          type: 'line',
+          smooth:true,
+          symbol:'circle',
+          symbolSize:7,
+          data:rates,
+          itemStyle: { color: '#409eff' },
+          lineStyle: { width: 3, color: '#409eff' },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(64,158,255,0.35)' },
+              { offset: 1, color: 'rgba(64,158,255,0.02)' }
+            ])
           },
-          pointer: {
-            itemStyle: {
-              color: 'auto'
-            }
-          },
-          axisTick: {
-            distance: -30,
-            length: 8,
-            lineStyle: {
-              color: '#fff',
-              width: 2
-            }
-          },
-          splitLine: {
-            distance: -30,
-            length: 30,
-            lineStyle: {
-              color: '#fff',
-              width: 4
-            }
-          },
-          axisLabel: {
-            color: 'auto',
-            distance: 40,
-            fontSize: 20
-          },
-          detail: {
-            valueAnimation: true,
-            formatter: '{value}%',
-            color: 'auto',
-            fontSize: 20
-          },
-          data: [
-            {
-              value: statistics.value.utilizationRate?.toFixed(1) || 0
-            }
-          ]
+          label: { show: true, formatter: '{c}%', color: '#409eff', fontSize: 12 }
         }
       ]
     })
