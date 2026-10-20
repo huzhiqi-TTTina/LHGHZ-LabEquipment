@@ -112,9 +112,9 @@ qr:
 # AI服务配置（通义千问 Qwen 模型）
 ai:
     provider: qwen  # 通义千问
-    api-url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions # 讯飞平台OpenAI兼容端点
-    api-key:
-    model: qwen-plus  # 讯飞平台modelId（平台显示Qwen3.6-35B-A3B，但调用时用此ID）
+    api-url: https://ws-gi0fr5mmrivar9vx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions # 讯飞平台OpenAI兼容端点
+    api-key: sk-ws-H.PXHXYPE.PUDa.MEQCIC7TdoZApgU-hZ2P6UKJe2_4liCBqhVkOSG-lHz6hRd4AiAFVFqH5keDHkzsCwxvLImNSHTWeK4Dh0rV3KmDZp4b9w
+    model: qwen3.7-plus  # 讯飞平台modelId（平台显示Qwen3.6-35B-A3B，但调用时用此ID）
     max-tokens: 16384 # 建议32k以下
     temperature: 0.7  # 控制随机性（0-1）
     timeout: 120  # 超时时间（秒）
