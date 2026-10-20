@@ -35,17 +35,4 @@ public interface EquipmentMapper extends BaseMapper<Equipment> {
     /**
      * 获取最近N天是设备利用率
      */
-    @Select("""
-        SELECT 
-            DATE_FORMAT(update_time, '%Y-%m-%d') AS date,
-            ROUND(
-                SUM(CASE WHEN status = 'BORROWED' THEN 1 ELSE 0 END) * 100.0 / 
-                NULLIF(SUM(CASE WHEN status != 'SCRAPPED' THEN 1 ELSE 0 END), 0), 
-            1) AS utilizationRate
-        FROM equipment
-        WHERE update_time >= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
-        GROUP BY DATE_FORMAT(update_time, '%Y-%m-%d')
-        ORDER BY date ASC
-    """)
-    List<UtilizationTrendDTO> selectUtilizationTrend(@Param("days")Integer days);
 }
