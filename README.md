@@ -119,7 +119,7 @@ npm run dev
 
 ---
 
-## API 接口清单（共 64 个）
+## API 接口清单（共 63 个）
 
 ### 一、认证接口（4个）
 - `POST /api/auth/login` - 用户登录
