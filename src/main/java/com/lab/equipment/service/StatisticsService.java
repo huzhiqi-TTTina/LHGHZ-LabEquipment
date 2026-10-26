@@ -35,8 +35,13 @@ import java.util.HashMap;                                  // 新增
 import java.util.List;                                     // 新增
 import java.util.Map;                                      // 新增
 import java.util.stream.Collectors;                        // 新增
-
-
+import com.lab.equipment.mapper.EquipmentDailyStatsMapper;
+import com.lab.equipment.entity.EquipmentDailyStats;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.springframework.stereotype.Service;
+import java.time.LocalDate;
 
 /**
  * 统计服务
@@ -45,11 +50,44 @@ import java.util.stream.Collectors;                        // 新增
 @RequiredArgsConstructor
 public class StatisticsService {
 
-    private final EquipmentMapper equipmentMapper;
+    //private final EquipmentMapper equipmentMapper;
     private final BorrowRecordMapper borrowRecordMapper;
     private final EquipmentReservationMapper reservationMapper;
     private final RepairRequestMapper repairRequestMapper;
     private final EquipmentCategoryMapper categoryMapper;
+    @Autowired
+    private EquipmentDailyStatsMapper dailyStatsMapper;
+    @Autowired
+    private EquipmentMapper equipmentMapper;
+    @Scheduled(cron = "0 0 1 * * ?")
+    public void generateDailyStats() {
+        LocalDate today = LocalDate.now();
+
+        // 1. 算出今天的各项数据 (调用您之前写的计数方法)
+        // 注意：如果您没有现成的统计总数方法，可以用 MyBatis-Plus 的 selectCount 配合 QueryWrapper 去查
+        Integer borrowed = Math.toIntExact(equipmentMapper.countByStatus("BORROWED"));
+        Integer scrapped = Math.toIntExact(equipmentMapper.countByStatus("SCRAPPED"));
+        // 假设 total 是查出所有设备数量
+        Integer total = equipmentMapper.selectCount(null).intValue();
+
+        // 2. 计算有效总数和利用率
+        int validTotal = total - scrapped;
+        double rate = 0.0;
+        if (validTotal > 0) {
+            rate = (double) borrowed / validTotal * 100;
+            rate = Math.round(rate * 10.0) / 10.0; // 保留一位小数
+        }
+
+        // 3. 存入新表
+        EquipmentDailyStats stats = new EquipmentDailyStats();
+        stats.setStatsDate(today);
+        stats.setTotalEquipment(validTotal);
+        stats.setBorrowedEquipment(borrowed);
+        stats.setUtilizationRate(rate);
+
+        dailyStatsMapper.insert(stats);
+        System.out.println("每日设备统计完成：" + today);
+    }
     /**
      * 获取统计数据
      */
@@ -111,30 +149,24 @@ public class StatisticsService {
     public List<UtilizationTrendDTO> getUtilizationTrend(Integer days) {
         // 返回最近N天的利用率数据
         // 这里简化实现，实际需要编写更复杂的SQL
-        if(days==null||days<=0){
-            days=5;
-        }
-        List<UtilizationTrendDTO> list=equipmentMapper.selectUtilizationTrend(days);
+        if (days == null || days <= 0) days = 5;
+
+        // 计算开始日期（比如查5天，就是从4天前到今天）
+        LocalDate startDate = LocalDate.now().minusDays(days - 1);
+
+        // 直接查统计表
+        QueryWrapper<EquipmentDailyStats> wrapper = new QueryWrapper<>();
+        wrapper.ge("stats_date", startDate).orderByAsc("stats_date");
+        List<EquipmentDailyStats> list = dailyStatsMapper.selectList(wrapper);
+
+        // 把查出来的数据转成前端要的 DTO
         List<UtilizationTrendDTO> resultList = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-
-        for (int i = days - 1; i >= 0; i--) {
-            String dateStr = today.minusDays(i).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-
-            // 在查询结果中找这一天的数据
-            UtilizationTrendDTO dto = list.stream()
-                    .filter(item -> dateStr.equals(item.getDate()))
-                    .findFirst()
-                    .orElse(null);
-
-            if (dto != null) {
-                resultList.add(dto);
-            } else {
-                UtilizationTrendDTO emptyDto = new UtilizationTrendDTO();
-                emptyDto.setDate(dateStr);
-                emptyDto.setUtilizationRate(0.0);
-                resultList.add(emptyDto);
-            }
+        for (EquipmentDailyStats stats : list) {
+            UtilizationTrendDTO dto = new UtilizationTrendDTO();
+            // 把 LocalDate 转成 String 格式
+            dto.setDate(stats.getStatsDate().toString());
+            dto.setUtilizationRate(stats.getUtilizationRate());
+            resultList.add(dto);
         }
 
         return resultList;
