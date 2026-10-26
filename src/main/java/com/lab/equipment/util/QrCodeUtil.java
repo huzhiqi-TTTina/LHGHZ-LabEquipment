@@ -18,7 +18,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,6 +39,9 @@ public class QrCodeUtil {
 
     @Value("${qr.code.base.url}")
     private String baseUrl;
+
+    @Value("${server.port:8080}")
+    private int serverPort;
 
     private static final int QR_CODE_SIZE = 300;
     private static final String FORMAT = "PNG";
@@ -104,7 +113,64 @@ public class QrCodeUtil {
      */
     public String generateEquipmentQrCodeUrl(Long equipmentId) {
         // 注意：context-path是/api，所以H5页面完整路径需要包含/api
-        return baseUrl + "/api/h5/equipment.html?id=" + equipmentId;
+        String base = resolveBaseUrl();
+        log.info("二维码基地址: {}", base);
+        return base + "/api/h5/equipment.html?id=" + equipmentId;
+    }
+
+    /**
+     * 解析二维码里使用的基地址：优先自动探测本机内网 IP，失败时退回配置值
+     */
+    public String resolveBaseUrl() {
+        String ip = detectLanIp();
+        String base = (ip != null && !ip.isEmpty())
+                ? "http://" + ip + ":" + serverPort
+                : baseUrl;
+        if (base != null && base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        return base;
+    }
+
+    /**
+     * 探测本机内网 IPv4：跳过回环、169.254 以及 VPN/TUN 等虚拟网卡
+     */
+    private String detectLanIp() {
+        String fallback = null;
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface ni : interfaces) {
+                if (!ni.isUp() || ni.isLoopback() || ni.isVirtual()) {
+                    continue;
+                }
+
+                String name = (ni.getName() + " " + ni.getDisplayName()).toLowerCase();
+                if (name.matches(".*(vmware|virtualbox|vethernet|hyper-v|tap|tun|sing|clash|bluetooth|mcafee|vpn|loopback).*")) {
+                    continue;
+                }
+
+                for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
+                    InetAddress addr = ia.getAddress();
+                    if (!(addr instanceof Inet4Address)) {
+                        continue;
+                    }
+                    if (addr.isLoopbackAddress() || addr.isLinkLocalAddress() || !addr.isSiteLocalAddress()) {
+                        continue;
+                    }
+
+                    String ip = addr.getHostAddress();
+                    if (ip.startsWith("10.") || ip.startsWith("192.168.")) {
+                        return ip;
+                    }
+                    if (fallback == null) {
+                        fallback = ip;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("自动探测本机IP失败: {}", e.getMessage());
+        }
+        return fallback;
     }
 
     /**
