@@ -9,11 +9,13 @@ import com.lab.equipment.dto.EquipmentVO;
 import com.lab.equipment.dto.PageQueryDTO;
 import com.lab.equipment.entity.Equipment;
 import com.lab.equipment.entity.EquipmentCategory;
+import com.lab.equipment.entity.EquipmentQrImage;
 import com.lab.equipment.entity.Laboratory;
 import com.lab.equipment.entity.SysUser;
 import com.lab.equipment.enums.EquipmentStatus;
 import com.lab.equipment.mapper.EquipmentCategoryMapper;
 import com.lab.equipment.mapper.EquipmentMapper;
+import com.lab.equipment.mapper.EquipmentQrImageMapper;
 import com.lab.equipment.mapper.LaboratoryMapper;
 import com.lab.equipment.mapper.SysUserMapper;
 import com.lab.equipment.util.ExcelUtil;
@@ -48,7 +50,26 @@ public class EquipmentService extends ServiceImpl<EquipmentMapper, Equipment> {
     private final LaboratoryMapper laboratoryMapper;
     private final SysUserMapper userMapper;
     private final QrCodeUtil qrCodeUtil;
+    private final EquipmentQrImageMapper qrImageMapper;
     private final ExcelUtil excelUtil;
+
+    /**
+     * 保存二维码图片到数据库（存在则更新）
+     */
+    private void saveQrImage(Long equipmentId, byte[] png) {
+        EquipmentQrImage img = qrImageMapper.selectById(equipmentId);
+        if (img == null) {
+            img = new EquipmentQrImage();
+            img.setEquipmentId(equipmentId);
+            img.setContentType("image/png");
+            img.setImageData(png);
+            qrImageMapper.insert(img);
+        } else {
+            img.setImageData(png);
+            qrImageMapper.updateById(img);
+        }
+    }
+
     /**
      * 分页查询设备列表
      */
@@ -117,12 +138,12 @@ public class EquipmentService extends ServiceImpl<EquipmentMapper, Equipment> {
         try {
             String uniqueCode = qrCodeUtil.generateUniqueCode(equipment.getId());
             String qrCodeContent = qrCodeUtil.generateEquipmentQrCodeUrl(equipment.getId());
-            String fileName = "equipment_" + equipment.getId() + "_" + System.currentTimeMillis() + ".png";
-            String qrCodeImageUrl = qrCodeUtil.generateQrCode(qrCodeContent, fileName);
+            byte[] png = qrCodeUtil.generateQrCodeBytes(qrCodeContent);
+            saveQrImage(equipment.getId(), png);
 
             equipment.setUniqueCode(uniqueCode);
             equipment.setQrCode(qrCodeContent);
-            equipment.setQrCodeImage(qrCodeImageUrl);
+            equipment.setQrCodeImage("/qrcode/" + equipment.getId());
             equipmentMapper.updateById(equipment);
         } catch (Exception e) {
             throw new RuntimeException("生成二维码失败: " + e.getMessage());
@@ -232,12 +253,12 @@ public class EquipmentService extends ServiceImpl<EquipmentMapper, Equipment> {
                 // 生成唯一标识码和二维码
                 String uniqueCode = qrCodeUtil.generateUniqueCode(equipment.getId());
                 String qrCodeContent = qrCodeUtil.generateEquipmentQrCodeUrl(equipment.getId());
-                String fileName = "equipment_" + equipment.getId() + "_" + System.currentTimeMillis() + ".png";
-                String qrCodeImageUrl = qrCodeUtil.generateQrCode(qrCodeContent, fileName);
+                byte[] png = qrCodeUtil.generateQrCodeBytes(qrCodeContent);
+                saveQrImage(equipment.getId(), png);
 
                 equipment.setUniqueCode(uniqueCode);
                 equipment.setQrCode(qrCodeContent);
-                equipment.setQrCodeImage(qrCodeImageUrl);
+                equipment.setQrCodeImage("/qrcode/" + equipment.getId());
                 equipmentMapper.updateById(equipment);
 
                 successCount++;
@@ -265,12 +286,12 @@ public class EquipmentService extends ServiceImpl<EquipmentMapper, Equipment> {
             // 生成唯一标识码和二维码
             String uniqueCode = qrCodeUtil.generateUniqueCode(equipment.getId());
             String qrCodeContent = qrCodeUtil.generateEquipmentQrCodeUrl(equipment.getId());
-            String fileName = "equipment_" + equipment.getId() + "_" + System.currentTimeMillis() + ".png";
-            String qrCodeImageUrl = qrCodeUtil.generateQrCode(qrCodeContent, fileName);
+            byte[] png = qrCodeUtil.generateQrCodeBytes(qrCodeContent);
+            saveQrImage(equipment.getId(), png);
 
             equipment.setUniqueCode(uniqueCode);
             equipment.setQrCode(qrCodeContent);
-            equipment.setQrCodeImage(qrCodeImageUrl);
+            equipment.setQrCodeImage("/qrcode/" + equipment.getId());
             equipmentMapper.updateById(equipment);
         } catch (Exception e) {
             throw new RuntimeException("生成二维码失败: " + e.getMessage(), e);

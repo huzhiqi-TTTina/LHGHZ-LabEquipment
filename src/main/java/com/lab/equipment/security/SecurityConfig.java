@@ -69,8 +69,10 @@ public class SecurityConfig {
                         .requestMatchers("/user/login").permitAll()
                         // 文件上传放行
                         .requestMatchers("/file/**").permitAll()
-                        // 二维码图片放行
+                        // 二维码图片放行（本地文件）
                         .requestMatchers("/uploads/**").permitAll()
+                        // 二维码图片放行（数据库存储）
+                        .requestMatchers("/qrcode/**").permitAll()
                         // Swagger文档放行
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
                         // 设备列表（首页展示）放行

@@ -100,20 +100,20 @@ jwt:
 # 文件上传路径
 file:
   upload:
-    path: D:/lab-equipment-uploads/
+    path: C:/lab-equipment-uploads/
     url-prefix: /uploads/
 
 # 二维码配置
 qr:
   code:
-    base.url: http://10.21.55.210:8080  # 已配置为当前电脑IP，手机热点环境
+    base.url: http://10.21.60.88:8080  # 生成二维码时的访问地址，换网络需同步修改并重新生成
     # - 公网访问：https://your-domain.com
 
 # AI服务配置（通义千问 Qwen 模型）
 ai:
     provider: qwen  # 通义千问
     api-url: https://ws-gi0fr5mmrivar9vx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions # 讯飞平台OpenAI兼容端点
-    api-key:
+    api-key: git
     model: qwen3.7-plus  # 讯飞平台modelId（平台显示Qwen3.6-35B-A3B，但调用时用此ID）
     max-tokens: 16384 # 建议32k以下
     temperature: 0.7  # 控制随机性（0-1）

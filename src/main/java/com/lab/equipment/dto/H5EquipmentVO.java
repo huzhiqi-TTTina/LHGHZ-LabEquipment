@@ -100,4 +100,19 @@ public class H5EquipmentVO {
      * 设备图片URL
      */
     private String imageUrl;
+
+    /**
+     * 唯一标识码
+     */
+    private String uniqueCode;
+
+    /**
+     * 二维码内容（扫码地址）
+     */
+    private String qrCode;
+
+    /**
+     * 二维码图片地址
+     */
+    private String qrCodeImage;
 }
