@@ -49,31 +49,5 @@ public class AIController {
         }
     }
 
-    /**
-     * 获取设备推荐
-     */
-    @GetMapping("/recommend")
-    public Result<List<Equipment>> getRecommendations(@RequestParam(required = false) Long userId) {
-        try {
-            List<Equipment> recommendations = llmService.getRecommendations(userId);
-            return Result.success(recommendations);
-        } catch (Exception e) {
-            log.error("获取推荐失败", e);
-            return Result.error("获取推荐失败");
-        }
-    }
 
-    /**
-     * 检查AI服务状态
-     */
-    @GetMapping("/status")
-    public Result<String> checkStatus() {
-        try {
-            String reply = llmService.chat("你好", null);
-            return Result.success("AI服务正常");
-        } catch (Exception e) {
-            log.error("AI服务状态检查失败", e);
-            return Result.error("AI服务暂不可用");
-        }
-    }
 }
