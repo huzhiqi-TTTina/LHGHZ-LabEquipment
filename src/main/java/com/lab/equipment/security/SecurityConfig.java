@@ -81,8 +81,7 @@ public class SecurityConfig {
                         .requestMatchers("/equipment/*").permitAll()
                         // H5设备页面放行
                         .requestMatchers("/h5/**").permitAll()
-                        // AI智能助手接口放行
-                        .requestMatchers("/ai/**").permitAll()
+                        // AI智能助手接口需要登录后访问（避免接口被公开滥用）
                         // 统计数据放行
                         .requestMatchers("/statistics/**").permitAll()
                         // 其他请求需要认证（方法级别的@PreAuthorize会进行权限检查）

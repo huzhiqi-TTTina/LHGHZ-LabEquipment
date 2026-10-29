@@ -40,6 +40,9 @@ public class QrCodeUtil {
     @Value("${qr.code.base.url}")
     private String baseUrl;
 
+    @Value("${qr.code.public.url:}")
+    private String publicUrl;
+
     @Value("${server.port:8080}")
     private int serverPort;
 
@@ -122,6 +125,12 @@ public class QrCodeUtil {
      * 解析二维码里使用的基地址：优先自动探测本机内网 IP，失败时退回配置值
      */
     public String resolveBaseUrl() {
+        // 公网部署时用配置的公网地址覆盖，避免取到服务器内网 IP
+        if (publicUrl != null && !publicUrl.isBlank()) {
+            String pub = publicUrl.trim();
+            return pub.endsWith("/") ? pub.substring(0, pub.length() - 1) : pub;
+        }
+
         String ip = detectLanIp();
         String base = (ip != null && !ip.isEmpty())
                 ? "http://" + ip + ":" + serverPort

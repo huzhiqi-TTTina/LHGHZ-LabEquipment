@@ -107,13 +107,14 @@ file:
 qr:
   code:
     base.url: http://10.21.60.88:8080  # 仅作兜底：正常情况下会自动使用运行后端那台机器的内网IP
+    public.url: ""                     # 线上部署时填公网地址（如 http://81.70.40.138:8080），填了优先使用
     # - 公网访问：https://your-domain.com
 
 # AI服务配置（通义千问 Qwen 模型）
 ai:
     provider: qwen  # 通义千问
     api-url: https://ws-gi0fr5mmrivar9vx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions # 讯飞平台OpenAI兼容端点
-    api-key: git
+    api-key: ${AI_API_KEY:}  # 从环境变量读取，不要写死
     model: qwen3.7-plus  # 讯飞平台modelId（平台显示Qwen3.6-35B-A3B，但调用时用此ID）
     max-tokens: 16384 # 建议32k以下
     temperature: 0.7  # 控制随机性（0-1）
